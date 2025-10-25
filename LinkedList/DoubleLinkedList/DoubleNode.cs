@@ -32,11 +32,9 @@ namespace DoubleLinkedList
                 if (da > db) return 1;
                 return 0;
             }
-
             // Si son texto
             return string.Compare(a.ToString(), b.ToString(), StringComparison.OrdinalIgnoreCase);
         }
-
         public void Add(T data)
         {
             var newNode = new Node(data);
@@ -46,28 +44,31 @@ namespace DoubleLinkedList
                 head = tail = newNode;
                 return;
             }
-
             Node? current = head;
             while (current != null && Compare(current.Data, data) < 0)
                 current = current.Next;
 
             if (current == null)
             {
+                // Insertar al final
                 tail!.Next = newNode;
                 newNode.Prev = tail;
                 tail = newNode;
             }
             else if (current == head)
             {
+                // Insertar al inicio
                 newNode.Next = head;
                 head!.Prev = newNode;
                 head = newNode;
             }
             else
             {
-                newNode.Prev = current.Prev;
+                // Insertar en medio
                 newNode.Next = current;
-                current.Prev!.Next = newNode;
+                newNode.Prev = current.Prev;
+                if (current.Prev != null)
+                    current.Prev.Next = newNode;
                 current.Prev = newNode;
             }
         }
@@ -78,7 +79,6 @@ namespace DoubleLinkedList
                 Console.WriteLine("La lista está vacía.");
                 return;
             }
-
             var current = head;
             Console.Write("Lista (adelante): ");
             while (current != null)
@@ -116,10 +116,8 @@ namespace DoubleLinkedList
                 items.Add(current.Data);
                 current = current.Next;
             }
-
             // Revertir el orden actual
             items.Reverse();
-
             // Vaciar y volver a llenar
             head = tail = null;
             foreach (var item in items)
@@ -138,40 +136,59 @@ namespace DoubleLinkedList
         }
         public void RemoveOne(T value)
         {
+            if (IsEmpty)
+            {
+                Console.WriteLine("La lista está vacía.");
+                return;
+            }
             var current = head;
-
             while (current != null)
             {
-                if (current.Data!.Equals(value))
+                if (Equals(current.Data, value))
                 {
-                    if (current == head)
-                        head = head.Next;
-                    if (current == tail)
-                        tail = tail.Prev;
                     if (current.Prev != null)
                         current.Prev.Next = current.Next;
+                    else
+                        head = current.Next;
                     if (current.Next != null)
                         current.Next.Prev = current.Prev;
-
-                    Console.WriteLine($"Se eliminó una ocurrencia de '{value}'.");
+                    else
+                        tail = current.Prev;
+                    Console.WriteLine($"Elemento '{value}' eliminado.");
                     return;
                 }
                 current = current.Next;
             }
-
-            Console.WriteLine($"No se encontró '{value}'.");
+            Console.WriteLine($"Elemento '{value}' no encontrado.");
         }
         public void RemoveAll(T value)
         {
-            int count = 0;
-            while (Exists(value))
+            if (IsEmpty)
             {
-                RemoveOne(value);
-                count++;
+                Console.WriteLine("La lista está vacía.");
+                return;
             }
-
-            if (count > 0)
-                Console.WriteLine($"Se eliminaron {count} ocurrencias de '{value}'.");
+            var current = head;
+            bool found = false;
+            while (current != null)
+            {
+                if (Equals(current.Data, value))
+                {
+                    var toDelete = current;
+                    if (toDelete.Prev != null)
+                        toDelete.Prev.Next = toDelete.Next;
+                    else
+                        head = toDelete.Next;
+                    if (toDelete.Next != null)
+                        toDelete.Next.Prev = toDelete.Prev;
+                    else
+                        tail = toDelete.Prev;
+                    found = true;
+                }
+                current = current.Next;
+            }
+            if (found)
+                Console.WriteLine($"Se eliminaron todas las ocurrencias de '{value}'.");
             else
                 Console.WriteLine($"No se encontraron ocurrencias de '{value}'.");
         }
